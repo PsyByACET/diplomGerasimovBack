@@ -9,7 +9,6 @@ const User = sequelize.define('user', {
     username: { type: DataTypes.STRING, allowNull: false },
     picture: { type: DataTypes.STRING},
     role: { type: DataTypes.STRING, defaultValue: 'USER' },
-    buy: { type: DataTypes.ARRAY(DataTypes.STRING) },
     about: { type: DataTypes.STRING },
     likes: { type: DataTypes.ARRAY(DataTypes.STRING) },
 })
@@ -40,6 +39,15 @@ const Basket = sequelize.define('basket', {
 const Basket_items = sequelize.define('basket_items', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 })
+
+const Buy = sequelize.define('buy', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+})
+
+const Buy_items = sequelize.define('buy_items', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+})
+
 
 const License = sequelize.define('license', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -81,6 +89,9 @@ const Format_model = sequelize.define('format_model', {
 User.hasOne(Basket)
 Basket.belongsTo(User)//корзина принадлежит пользователю
 
+User.hasOne(Buy)
+Buy.belongsTo(User)
+
 User.hasOne(Link)
 Link.belongsTo(User)
 
@@ -102,11 +113,17 @@ Model.belongsTo(License)
 Format.belongsToMany(Model, {through: Format_model})
 Model.belongsToMany(Format, {through: Format_model})
 ////////////////////////////////
+Buy.hasMany(Basket_items)
+Buy_items.belongsTo(Basket)
+////////////////////////////////
 Basket.hasMany(Basket_items)
 Basket_items.belongsTo(Basket)
 ////////////////////////////////
 Model.hasMany(Basket_items)
 Basket_items.belongsTo(Model)
+
+Model.hasMany(Buy_items)
+Buy_items.belongsTo(Model)
 
 Model.hasMany(Comment)
 Comment.belongsTo(Model)

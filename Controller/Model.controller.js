@@ -1,50 +1,26 @@
 const db = require("../db")
 const uuid = require('uuid')
 const path = require('path')
-const {Model} = require("../models/models")
+const {Model, Basket_items} = require("../models/models")
 const ApiError = require('../error/ApiError')
-const {request} = require("express");
+const { Op } = require("sequelize");
 
 class ModelController {
     async getModels(req, res) {
         const models = await db.query(`SELECT * FROM model ORDER BY id`)
         res.json(models)
     }
-    async createModel(req, res) {
-        const {
-            name,
-            license,
-            link_photo,
-            id_artist,
-            description,
-            categories,
-            formats,
-            tags,
-            price,
-            like_count,
-            link_download,
-            size
-        } = req.body
-        const models = await db.query(`INSERT INTO model (name, license, link_photo, id_artist, description, categories, formats, tags, price, like_count, link_download, size) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,[
-            name,
-            license,
-            link_photo,
-            id_artist,
-            description,
-            categories,
-            formats,
-            tags,
-            price,
-            like_count,
-            link_download,
-            size
-        ])
-        res.json(models[0])
-    }
     async getOneModel(req, res) {
-        const id = req.params.id
-        const models = await db.query(`SELECT * FROM model where id = $1`,[id])
-        res.json(models[0])
+        const idn = req.params.id
+        // const models = await db.query(`SELECT * FROM model where id = $1`,[id])
+        const model = await Model.findOne({
+            where: {
+                id:idn
+            }
+        })
+        // res.json(models[0])
+        return res.json(model)
+
     }
     async updateModel(req, res) {
         const {name, license, link_photo, id_artist, description, categories, formats, tags, price, like_count, link_download, size, id} = req.body
@@ -71,11 +47,10 @@ class ModelController {
             const {link_download} = req.files
             let fileNameR = uuid.v4() + ".rar"
             link_download.mv(path.resolve(__dirname, '..', 'static/rar', fileNameR))
-            console.log('1')
+
             const {model3d} = req.files
             let fileNameModel = uuid.v4() + ".glb"
             model3d.mv(path.resolve(__dirname, '..', 'static/3dModel', fileNameModel))
-            console.log('2')
 
             let tagsArray = []
             if (Array.isArray(tags)) {
@@ -84,22 +59,41 @@ class ModelController {
                 tagsArray.push(tags)
             }
 
-            console.log('3')
-            console.log(link_download)
-            console.log('-------------------------------')
-            console.log(model3d)
             const model = await Model.create({name, license, description, tags:tagsArray, price, likes, size, userId, categoryId, licenseId, link_photo: fileName, link_download: fileNameR, model3d:fileNameModel})
-            console.log('4')
             return res.json(model)
         }catch (e) {
             next(ApiError.badRequest(e.message))
         }
 
     }
-    async getAll(req, res) {
-        const {categoryId, licenseId} = req.body
-        let models;
-        if (!categoryId && !licenseId) {
+
+    async createBasketItem(req, res, next) {
+        try {
+            let {basketId, modelId} = req.body
+            const model = await Basket_items.create({basketId:basketId, modelId:modelId})
+            return res.json(model)
+        }catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async getAllBasket (req, res) {
+        const {basketId} = req.params
+        let items;
+        items = await Basket_items.findAll( {
+                where: {
+                    basketId: basketId,
+                },
+        })
+        return res.json(items)
+    }
+
+
+
+    async getAll(req, res, next) {
+        try {
+            const {categoryId, licenseId, searchField} = req.query
+            let models;
             models = await Model.findAll({attributes: [
                     "id",
                     "name",
@@ -114,23 +108,27 @@ class ModelController {
                     "userId",
                     "categoryId",
                     "licenseId"
-                ]})
+                ],
+                where: {
+                    [Op.and]: [
+                        categoryId && { categoryId: categoryId },
+                        licenseId && { licenseId: licenseId },
+                        searchField && {
+                            [Op.or]:[
+                                {name: { [Op.iLike]: `%${searchField}%`}},
+                                {tags: { [Op.contains]: [searchField.toLowerCase()] }},
+                            ]
+                        },
+                    ],
+                },
+            })
+
+            return res.json(models)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
         }
-        if (categoryId && !licenseId) {
-            models = await Model.findAll({where:{categoryId}})
-        }
-        if (!categoryId && licenseId) {
-            models = await Model.findAll({where:{licenseId}})
-        }
-        if (categoryId && licenseId) {
-            models = await Model.findAll({where:{categoryId, licenseId}})
-        }
-        return res.json(models)
     }
 
-    async getOne(req, res) {
-
-    }
 
 }
 module.exports = new ModelController();
