@@ -20,6 +20,14 @@ app.use("/api", userRouter)
 
 app.use(errorHandler)
 
+const date = new Date('Sat Feb 23 2222 01:22:00 GMT+0300 (Москва, стандартное время')
+; console.log(date.toLocaleString("en-US", {
+    weekday: "long",
+    hour: "numeric",
+    minute: "numeric",
+    hourCycle: "h23",
+}))
+
 const start = async () => {
     try {
         await sequelize.authenticate();

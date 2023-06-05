@@ -4,6 +4,7 @@ const ApiError = require('../error/ApiError')
 const {User, Basket} = require('../models/models')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const {DataTypes} = require("sequelize");
 
 const generateJwt = (id, mail, role) => {
     return jwt.sign(
@@ -24,7 +25,7 @@ class UserController {
 
     async getOneUser(req, res) {
         const id = req.params.id
-        const user = await User.findAll({
+        const user = await User.findOne({
             attributes: ["id", "name", "mail", "password", "username", "picture", "role", "about", "likes"],
             where: { id: id },
         })
@@ -76,6 +77,37 @@ class UserController {
     async check(req, res, next) {
         const token = generateJwt(req.user.id, req.user.mail, req.user.role)
         return res.json({token})
+    }
+
+    async updateUser(req, res, next) {
+        try {
+            const {username, picture, about, id} = req.body
+            console.log(username)
+            console.log(about)
+            const existProduct = await User.findOne({
+                attributes: ["id", "username", "picture", "about"],
+                where: { id: id },
+            });
+            // if (!existProduct) {
+            //     throw new Error("There is no product with this id");
+            // }
+            // if (existProduct.status === "closed") {
+            //     throw new Error("Status is closed. You can't change product anymore");
+            // }
+            let user = await User.update(
+                {
+                    username: username,
+                    picture: picture,
+                    about: about,
+                },
+                {
+                    where: { id: id},
+                }
+            );
+            return res.json(user)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
     }
 
 }

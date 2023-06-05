@@ -23,6 +23,8 @@ const Model = sequelize.define('model', {
     likes: { type: DataTypes.INTEGER },
     link_download: { type: DataTypes.STRING },
     model3d: { type: DataTypes.STRING },
+    status: { type: DataTypes.STRING },
+    status_des: { type: DataTypes.STRING },
     size: { type: DataTypes.INTEGER },
 })
 
@@ -102,13 +104,13 @@ User.hasMany(Comment)
 Comment.belongsTo(User)
 
 User.hasMany(Model)
-Model.belongsTo(User)
+Model.belongsTo(User, { foreignKey: "userId", as: "artist" })
 ////////////////////////////////
 Category.hasMany(Model)
 Model.belongsTo(Category)
 
 License.hasOne(Model)
-Model.belongsTo(License)
+Model.belongsTo(License,{ foreignKey: "licenseId", as: "license" })
 
 Format.belongsToMany(Model, {through: Format_model})
 Model.belongsToMany(Format, {through: Format_model})
@@ -120,7 +122,7 @@ Basket.hasMany(Basket_items)
 Basket_items.belongsTo(Basket)
 ////////////////////////////////
 Model.hasMany(Basket_items)
-Basket_items.belongsTo(Model)
+Basket_items.belongsTo(Model, { foreignKey: "modelId", as: "idmodel" })
 
 Model.hasMany(Buy_items)
 Buy_items.belongsTo(Model)
