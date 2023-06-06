@@ -6,7 +6,9 @@ const categoriesController = require("../Controller/Categories.controller");
 const licenceController = require("../Controller/License.controller");
 const formatController = require("../Controller/Format.controller")
 const authMiddleware = require("../middleware/authMiddleware")
+const multer = require("multer")
 
+const upload = multer({storage:multer.memoryStorage()})
 
 
 router.post("/registration", usersController.registration);
@@ -21,6 +23,7 @@ router.get("/user_models/:userId", modelController.getUserModels);
 
 router.post("/categories", categoriesController.create);
 router.get("/categories", categoriesController.getAll);
+router.post("/h", upload.single("link_photo "), modelController.tet);
 
 router.post("/license", licenceController.create);
 router.get("/license", licenceController.getAll);

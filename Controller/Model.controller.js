@@ -4,6 +4,29 @@ const path = require('path')
 const {Model, Basket_items, User, License} = require("../models/models")
 const ApiError = require('../error/ApiError')
 const { Op, DataTypes} = require("sequelize");
+const multer = require("multer")
+const {getStorage, ref, getDownloadURL, uploadBytes} = require ("firebase/storage");
+const {initializeApp} = require("firebase/app");
+const {errors} = require("pg-promise");
+
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBGtDibpC9g1JUAOGWHaO6Edd52KiLe5GQ",
+    authDomain: "testproject-42150.firebaseapp.com",
+    projectId: "testproject-42150",
+    storageBucket: "testproject-42150.appspot.com",
+    messagingSenderId: "359509321271",
+    appId: "1:359509321271:web:651baf0f0c13c8e11181b2",
+    measurementId: "G-729ZTWDLRB"
+};
+
+// Initialize Firebase
+initializeApp(firebaseConfig);
+
+
+
+const storage = getStorage()
+
 
 class ModelController {
     async getModels(req, res) {
@@ -30,6 +53,27 @@ class ModelController {
     //     )
     //     res.json(model[0])
     // }
+
+    async tet (req, res) {
+
+            console.log('sadas------------------------------------------------------------------------------------------------')
+            const storageRef = ref(storage, `images`);
+            console.log(req.body)
+            const {link_photo} = req.files
+            console.log(link_photo)
+            console.log(typeof link_photo)
+
+
+
+            const fileRef = ref(storageRef, "sdsd");
+            console.log('sadas------------------------------------------------------------------------------------------------')
+            uploadBytes(fileRef, link_photo).then((snapshot) => {
+                console.log("Файл успешно загружен");
+            }).catch((error) => {
+                console.error("Ошибка при загрузке файла:", error);
+            });
+    }
+
     async deleteModel(req, res, next) {
         const id = req.params.id
         const model = await db.query(`DELETE FROM model where id = $1`,[id])
@@ -39,11 +83,39 @@ class ModelController {
 
         try {
             let {name, license, description, tags, price, likes, size, status, licenseId, categoryId} = req.body
-            const {link_photo} = req.files
-            let fileName = uuid.v4() + ".jpg"
-            link_photo.mv(path.resolve(__dirname, '..', 'static/photoModel', fileName))
 
-            const {link_download} = req.files
+            let fileName = uuid.v4() + ".jpg"
+            // const imageRef = ref(storage, `image/${fileName}`)
+            // const snapshot = await uploadBytesResumable(imageRef)
+            // const down = await getDownloadURL(snapshot.ref)
+
+
+
+            // Создаем ссылку на место, куда вы хотите загрузить файл (например, "images")
+            const storageRef = ref(storage, `images`);
+
+            // Получаем файл, который нужно загрузить (например, из input[type="file"])
+            const {link_photo} = req.files
+            // const metadata = {
+            //     contentType: req.file.mimetype
+            // }
+
+            // Создаем ссылку на файл в хранилище
+            const fileRef = ref(storageRef, link_photo.name);
+            // Загружаем файл в хранилище Firebase
+            uploadBytes(fileRef, link_photo).then((snapshot) => {
+                console.log("Файл успешно загружен");
+            }).catch((error) => {
+                console.error("Ошибка при загрузке файла:", error);
+            });
+
+
+
+
+
+            // link_photo.mv(path.resolve(__dirname, '..', 'static/photoModel', fileName))
+
+            // const {link_download} = req.files
             let fileNameR = uuid.v4() + ".rar"
             link_download.mv(path.resolve(__dirname, '..', 'static/rar', fileNameR))
 
@@ -59,7 +131,10 @@ class ModelController {
             }
 
             const model = await Model.create({name, license, description, tags:tagsArray, price, likes, size, userId: req.user.id, categoryId, licenseId, status, link_photo: fileName, link_download: fileNameR, model3d:fileNameModel})
-            return res.json(model)
+            return res.send({
+                name: req.file.originalName,
+                down: down
+            })
         }catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -245,7 +320,7 @@ class ModelController {
 
     async getAll(req, res, next) {
         try {
-
+            // res.setHeader('Access-Control-Allow-Origin', '*');
             const {categoryId, licenseId, searchField, status} = req.query
             let models = await Model.findAll({
                 attributes: [
