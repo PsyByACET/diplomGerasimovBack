@@ -16,6 +16,7 @@ router.post("/login", usersController.login);
 router.get("/auth", authMiddleware, usersController.check);
 router.get("/users", usersController.getUsers);
 router.get("/user/:id", usersController.getOneUser);
+// router.delete("/user/:id", usersController.deleteUser);
 router.put("/user", usersController.updateUser)
 
 router.get("/user_models/:userId", modelController.getUserModels);
@@ -23,17 +24,20 @@ router.get("/user_models/:userId", modelController.getUserModels);
 
 router.post("/categories", categoriesController.create);
 router.get("/categories", categoriesController.getAll);
-router.post("/h", upload.single("link_photo "), modelController.tet);
 
 router.post("/license", licenceController.create);
 router.get("/license", licenceController.getAll);
+// router.delete("/license/:id", licenceController.delete);
 
 router.post("/formats", formatController.create);
 router.get("/formats", formatController.getAll);
+// router.delete("/formats/:id", formatController.delete);
 
 router.post("/model", authMiddleware, modelController.create);
 router.get("/model", modelController.getAll);
 router.put("/model", modelController.updateModel);
+router.put("/modelst", modelController.updateStatusModel);
+// router.delete("/model/:id", modelController.deleteModel);
 
 
 
@@ -41,18 +45,6 @@ router.post("/basket_item", modelController.createBasketItem)
 router.get("/basket_items/:basketId", modelController.getAllBasketItems)
 router.delete("/basket_items/:basketId", modelController.deleteBasketItem)
 
-// router.post("/categories", usersController.login);
-////
-// router.get("/users", usersController.getUsers);
-// router.get("/user/:id", usersController.getOneUser);
-// router.post("/user", usersController.createUser);
-
-// router.delete("/user/:id", usersController.deleteUser);
-//
-// router.get("/models", modelController.getModels);
 router.get("/model/:id", modelController.getOneModel);
-// // router.post("/model", modelController.createModel);
-// router.put("/model", modelController.updateModel)
-// router.delete("/model/:id", modelController.deleteModel);
 
 module.exports = router;

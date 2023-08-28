@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const {corsNext} = require("./middleware/corsNext")
 require("dotenv").config();
 const sequelize = require("./db")
 const models = require ('./models/models')
@@ -12,6 +13,7 @@ const BACKEND_PORT = 5001;
 
 const app = express();
 app.use(express.json()); //for parsing app//json
+
 
 // // Отключение CORS
 // app.use((req, res, next) => {
@@ -28,7 +30,7 @@ app.use(express.json()); //for parsing app//json
 // app.use(cors({
 //     origin: "*" // Здесь указывается разрешенный домен
 // }));
-
+// app.use(corsNext())
 app.use(cors())
 
 app.use(express.static(path.resolve(__dirname, 'static')))

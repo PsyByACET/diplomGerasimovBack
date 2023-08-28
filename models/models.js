@@ -87,6 +87,9 @@ const Rating = sequelize.define('rating', {
 const Format_model = sequelize.define('format_model', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 })
+const Model_format = sequelize.define('model_format', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+})
 ////////////////////////////////
 User.hasOne(Basket)
 Basket.belongsTo(User)//корзина принадлежит пользователю
@@ -112,8 +115,16 @@ Model.belongsTo(Category)
 License.hasOne(Model)
 Model.belongsTo(License,{ foreignKey: "licenseId", as: "license" })
 
-Format.belongsToMany(Model, {through: Format_model})
-Model.belongsToMany(Format, {through: Format_model})
+
+Model.hasMany(Model_format)
+Model_format.belongsTo(Model)
+
+
+Model_format.hasMany(Format_model)
+Format_model.belongsTo(Model_format)
+
+Format.hasMany(Format_model)
+Format_model.belongsTo(Format, { foreignKey: "formatId", as: "idformat" })
 ////////////////////////////////
 Buy.hasMany(Basket_items)
 Buy_items.belongsTo(Basket)
@@ -141,7 +152,8 @@ module.exports = {
     License,
     Link,
     Rating,
-    Format_model
+    Format_model,
+    Model_format
 }
 
 

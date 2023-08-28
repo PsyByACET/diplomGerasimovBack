@@ -7,12 +7,10 @@
     }
   ],
   "routes": [
+
     {
       "src": "/(.*)",
-      "dest": "/",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://front-vlagogaik.vercel.app"
-      }
+      "dest": "/"
     }
   ]
 }

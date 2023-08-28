@@ -5,6 +5,8 @@ const {User, Basket} = require('../models/models')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {DataTypes} = require("sequelize");
+const uuid = require("uuid");
+const path = require("path");
 
 const generateJwt = (id, mail, role) => {
     return jwt.sign(
@@ -33,14 +35,7 @@ class UserController {
     }
 
 
-    // async updateUser(req, res) {
-    //     const {name, mail, password, username, picture, basket, buy, likes, about, id} = req.body
-    //     const user = await db.query(
-    //         `UPDATE users set name=$1, mail=$2, password=$3, username=$4, picture=$5, basket=$6, buy=$7, likes=$8, about=$9 where id=$10 RETURNING *`,
-    //         [name, mail, password, username, picture, basket, buy, likes, about, id]
-    //     )
-    //     res.json(user[0])
-    // }
+
     async deleteUser(req, res) {
         const id = req.params.id
         const user = await db.query(`DELETE FROM users where id = $1`,[id])
@@ -81,23 +76,23 @@ class UserController {
 
     async updateUser(req, res, next) {
         try {
-            const {username, picture, about, id} = req.body
-            console.log(username)
-            console.log(about)
+            const {username, about, id} = req.body
+
+            const {picture} = req.files
+            console.log(picture)
+            let fileName = uuid.v4() + ".jpg"
+            picture.mv(path.resolve(__dirname, '..', 'static/photoUser', fileName))
+
             const existProduct = await User.findOne({
                 attributes: ["id", "username", "picture", "about"],
                 where: { id: id },
             });
-            // if (!existProduct) {
-            //     throw new Error("There is no product with this id");
-            // }
-            // if (existProduct.status === "closed") {
-            //     throw new Error("Status is closed. You can't change product anymore");
-            // }
+
+
             let user = await User.update(
                 {
                     username: username,
-                    picture: picture,
+                    picture: fileName,
                     about: about,
                 },
                 {

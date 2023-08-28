@@ -1,5 +1,6 @@
 const {Category} = require('../models/models')
 const ApiError = require('../error/ApiError')
+const db = require("../db");
 
 class CategoriesController {
     async create(req, res) {
@@ -14,6 +15,11 @@ class CategoriesController {
         res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
         const categories = await Category.findAll()
         return res.json(categories)
+    }
+    async delete(req, res, next) {
+        const id = req.params.id
+        const model = await db.query(`DELETE FROM category where id = $1`,[id])
+        res.json(model[0])
     }
 }
 
